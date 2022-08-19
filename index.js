@@ -1,56 +1,42 @@
-// const HourEl = document.getElementById("hour");
-// const MinuteEl = document.getElementById("Minutes");
-// const SecondEl = document.getElementById("Seconds");
-// const ampmEl = document.getElementById("ampm");
+const num1 = Math.ceil(Math.random() * 10)
+const num2 = Math.ceil(Math.random() * 10)
+
+const questionEl = document.getElementById("question");
 
 
-// function updateclock() {
-//     let h = new Date().gethours();
-//     let m = new Date().getMinutes();
-//     let s = new Date().getSeconds();
-//     let ampm = "AM"
+const inuptEL = document.getElementById("input");
 
-//     if (h > 12) {
-//         h = h - 12
-//         ampm = "PM";
-//     }
+const formEl = document.getElementById("form");
 
-//     HourEl.innerText = h;
-//     MinuteEl.innerText = m;
-//     SecondEl.innerText = s;
-// }
-// updateclock()
+const scoreEl = document.getElementById("score");
 
-/////////////////////////////////////////////
-/////////////////////////////////////////////
-/////////////////////////////////////////////
+let score = JSON.parse(localStorage.getItem("score"));
 
-setInterval(updateclock, 1000);
-
-function updateclock() {
-    let time = new Date();
-    let hour = time.getHours();
-    let min = time.getMinutes();
-    let sec = time.getSeconds();
-    let ampm = "AM";
-
-    if (hour > 12) {
-        hour -= 12;
-        ampm = "PM";
-    }
-    if (hour == 0) {
-        hr = 12;
-        ampm = "AM";
-    }
-
-    hour = hour < 10 ? "0" + hour : hour;
-    min = min < 10 ? "0" + min : min;
-    sec = sec < 10 ? "0" + sec : sec;
-
-    document.getElementById("hour").innerHTML = hour;
-    document.getElementById("minutes").innerHTML = min;
-    document.getElementById("seconds").innerHTML = sec;
-    document.getElementById("ampm").innerHTML = ampm;
+if (!score) {
+    score = 0;
 }
 
-// updateclock();
+scoreEl.innerText = `score:${score}`
+
+
+
+questionEl.innerText = `what is ${num1} multiply by ${num2} ? `
+
+const correctAns = num1 * num2;
+formEl.addEventListener("submit", () => {
+
+
+    const userAns = +inputEL.value
+    if (userAns === correctAns) {
+        score++
+        updatelocalStorage()
+    }
+    else {
+        score--
+        updatelocalStorage()
+    }
+});
+
+function updatelocalStorage() {
+    localStorage.setItem("score", JSON.stringify(score))
+}   
