@@ -1,4 +1,4 @@
-name: Build Ludo Online APK
+name: Build Ludo Stable APK
 
 on:
   push:
@@ -29,28 +29,42 @@ jobs:
       - name: Install Android platform
         run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
 
+      - name: Restore bundled game
+        run: |
+          base64 -d ludo-online-apk/app/src/main/assets/launcher.html.gz.b64 | gzip -d > ludo-online-apk/app/src/main/assets/launcher.html
+          test -s ludo-online-apk/app/src/main/assets/launcher.html
+          grep -q 'VS COMPUTER' ludo-online-apk/app/src/main/assets/launcher.html
+          grep -q 'PLAY WITH FRIENDS' ludo-online-apk/app/src/main/assets/launcher.html
+          grep -q 'ONLINE PLAY' ludo-online-apk/app/src/main/assets/launcher.html
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
 
-      - name: Build APK
+      - name: Build APK with Android Gradle Plugin
         working-directory: ludo-online-apk
         run: gradle --no-daemon --stacktrace :app:assembleDebug
 
       - name: Verify APK archive
         run: unzip -t ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Verify APK signature
-        run: jarsigner -verify -verbose -certs ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify zip alignment
+        run: $ANDROID_HOME/build-tools/35.0.0/zipalign -c -v 4 ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Verify Android APK signatures
+        run: $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose --print-certs ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Inspect package
+        run: $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | head -20
 
       - name: Rename APK
-        run: cp ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk Ludo_Arena_Online_Stable.apk
+        run: cp ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk Ludo_Arena_Stable_Android.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Ludo_Arena_Online_Stable
-          path: Ludo_Arena_Online_Stable.apk
+          name: Ludo_Arena_Stable_Android
+          path: Ludo_Arena_Stable_Android.apk
           if-no-files-found: error
           retention-days: 7
