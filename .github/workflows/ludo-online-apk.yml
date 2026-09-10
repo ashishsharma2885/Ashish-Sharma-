@@ -1,4 +1,4 @@
-name: Build Ludo Stable APK
+name: Build Ludo Install-Safe APK
 
 on:
   push:
@@ -29,16 +29,53 @@ jobs:
       - name: Install Android platform
         run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
 
-      - name: Restore and validate bundled game
+      - name: Restore bundled game
         run: |
           cat ludo-online-apk/app/src/main/assets/game.part1a ludo-online-apk/app/src/main/assets/game.part1b1a ludo-online-apk/app/src/main/assets/game.part1b1b ludo-online-apk/app/src/main/assets/game.part1b2 ludo-online-apk/app/src/main/assets/game.part2 ludo-online-apk/app/src/main/assets/game.part3 ludo-online-apk/app/src/main/assets/game.part4 ludo-online-apk/app/src/main/assets/game.part5 ludo-online-apk/app/src/main/assets/game.part6 > /tmp/ludo-game.b64
           test "$(wc -c < /tmp/ludo-game.b64)" -eq 31948
           base64 -d /tmp/ludo-game.b64 | gzip -d > ludo-online-apk/app/src/main/assets/launcher.html
           test "$(wc -c < ludo-online-apk/app/src/main/assets/launcher.html)" -eq 93236
           echo '26ed928cc5c850fadc1fe268f92dda2efa850ab68fb390503dae8d21028907cf  ludo-online-apk/app/src/main/assets/launcher.html' | sha256sum -c -
-          grep -q 'VS COMPUTER' ludo-online-apk/app/src/main/assets/launcher.html
-          grep -q 'PLAY WITH FRIENDS' ludo-online-apk/app/src/main/assets/launcher.html
-          grep -q 'ONLINE PLAY' ludo-online-apk/app/src/main/assets/launcher.html
+
+      - name: Center gameplay and add adjustable position
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('ludo-online-apk/app/src/main/assets/launcher.html')
+          h=p.read_text(encoding='utf-8')
+          open_marker='<section id="gameScreen" class="screen gameScreen hidden">'
+          close_marker='\n</section>\n\n\n<!-- SHOP -->'
+          h=h.replace(open_marker,open_marker+'\n  <div id="gameStage" class="gameStage">',1)
+          h=h.replace(close_marker,'\n  </div>'+close_marker,1)
+          old='.gameScreen{padding:8px 7px calc(8px + env(safe-area-inset-bottom))}'
+          new='''.gameScreen{height:100vh;height:100dvh;min-height:100vh;min-height:100dvh;overflow-y:auto;overflow-x:hidden;padding:0;overscroll-behavior:contain}\n.gameStage{width:100%;min-height:100%;display:flex;flex-direction:column;justify-content:center;padding:calc(10px + env(safe-area-inset-top)) 7px calc(10px + env(safe-area-inset-bottom));transition:padding .18s ease,transform .18s ease}\n.gameScreen[data-game-position="high"] .gameStage{justify-content:flex-start;padding-top:calc(14px + env(safe-area-inset-top))}\n.gameScreen[data-game-position="center"] .gameStage{justify-content:center}\n.gameScreen[data-game-position="low"] .gameStage{justify-content:flex-end;padding-bottom:calc(18px + env(safe-area-inset-bottom))}\n@media (max-height:700px){.gameStage{justify-content:flex-start!important}}'''
+          h=h.replace(old,new,1)
+          marker='  <label class="settingRow"><span><b>Animations</b><small>Dice rolling, hopping pawns and capture reactions</small></span><span class="switch"><input id="setAnimations" type="checkbox" checked><i class="slider"></i></span></label>'
+          h=h.replace(marker,marker+'\n  <label class="settingRow"><span><b>Game Position</b><small>Move gameplay higher, center it, or place it lower</small></span><select id="setGamePosition"><option value="high">Higher</option><option value="center" selected>Center</option><option value="low">Lower</option></select></label>',1)
+          h=h.replace('const DEFAULT_PROFILE={playerName:"Player",coins:0,gems:50,ownedBoards:["classic"],ownedPawns:["classic"],board:"classic",pawn:"classic",wins:0};','const DEFAULT_PROFILE={playerName:"Player",coins:0,gems:50,ownedBoards:["classic"],ownedPawns:["classic"],board:"classic",pawn:"classic",wins:0,gamePosition:"center"};',1)
+          h=h.replace('function saveProfile(){','function applyGamePosition(){const pos=["high","center","low"].includes(profile.gamePosition)?profile.gamePosition:"center";$("#gameScreen").dataset.gamePosition=pos;}\nfunction saveProfile(){',1)
+          h=h.replace('updateWalletUI();updateProfileUI();applyCosmetics();','updateWalletUI();updateProfileUI();applyCosmetics();applyGamePosition();',1)
+          h=h.replace('  $("#setDifficulty").value=options.difficulty;$("#setBlocks").checked=options.blocks;$("#setThreeSix").checked=options.threeSix;','  $("#setDifficulty").value=options.difficulty;$("#setBlocks").checked=options.blocks;$("#setThreeSix").checked=options.threeSix;$("#setGamePosition").value=profile.gamePosition||"center";',1)
+          h=h.replace('  options.difficulty=$("#setDifficulty").value;options.blocks=$("#setBlocks").checked;options.threeSix=$("#setThreeSix").checked;','  options.difficulty=$("#setDifficulty").value;options.blocks=$("#setBlocks").checked;options.threeSix=$("#setThreeSix").checked;profile.gamePosition=$("#setGamePosition").value;saveProfile();',1)
+          event='$("#settingsBack").addEventListener("click",()=>{readSettings();if(settingsOrigin==="game")resumeGame();else{show("home");refreshHome()}});'
+          h=h.replace(event,event+'\n$("#setGamePosition").addEventListener("change",()=>{profile.gamePosition=$("#setGamePosition").value;saveProfile()});',1)
+          h=h.replace('applyCosmetics();updateWalletUI();updateProfileUI();refreshSetup();show("home");','applyCosmetics();updateWalletUI();updateProfileUI();applyGamePosition();refreshSetup();show("home");',1)
+          required=['gameStage','Game Position','VS COMPUTER','PLAY WITH FRIENDS','ONLINE PLAY']
+          missing=[x for x in required if x not in h]
+          if missing: raise SystemExit('Missing expected content: '+','.join(missing))
+          p.write_text(h,encoding='utf-8')
+          PY
+
+      - name: Validate bundled JavaScript
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          h=Path('ludo-online-apk/app/src/main/assets/launcher.html').read_text(encoding='utf-8')
+          scripts='\n'.join(re.findall(r'<script>(.*?)</script>',h,re.S))
+          Path('/tmp/ludo.js').write_text(scripts,encoding='utf-8')
+          PY
+          node --check /tmp/ludo.js
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -55,22 +92,22 @@ jobs:
       - name: Verify zip alignment
         run: $ANDROID_HOME/build-tools/35.0.0/zipalign -c -v 4 ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Verify Android APK signatures
+      - name: Verify Android signatures
         run: $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose --print-certs ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Inspect package
+      - name: Inspect install package
         run: |
-          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | head -20
-          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | grep "package: name='com.ludoarena.akstable2026'"
+          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | head -25
+          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | grep "package: name='com.ashish.ludovibe.stable20260910'"
           $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | grep "sdkVersion:'21'"
 
       - name: Rename APK
-        run: cp ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk Ludo_Arena_Stable_Fixed.apk
+        run: cp ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk Ludo_Vibe_Stable_Android.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Ludo_Arena_Stable_Fixed
-          path: Ludo_Arena_Stable_Fixed.apk
+          name: Ludo_Vibe_Stable_Android
+          path: Ludo_Vibe_Stable_Android.apk
           if-no-files-found: error
           retention-days: 7
