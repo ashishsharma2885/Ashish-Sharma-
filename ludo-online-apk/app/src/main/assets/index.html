@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<title>Ludo Arena Mobile</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="gameApp" class="app" data-board="classic" data-pawn="classic">
+
+<!-- HOME -->
+<section id="homeScreen" class="screen entryScreen">
+  <div class="entryTop">
+    <button id="entryProfileEdit" class="entryProfile" type="button" aria-label="Edit player profile">
+      <div class="entryAvatar">🙂</div>
+      <div class="entryProfileText">
+        <b id="entryPlayerName">Player</b>
+        <small>✏️ Edit profile</small>
+      </div>
+    </button>
+
+    <button id="entryCoinBuy" class="entryWallet coinWallet" type="button" aria-label="Buy coins">
+      <span class="walletIcon">🪙</span>
+      <span class="walletValue" id="entryCoinBalance">0</span>
+      <span class="walletPlus">+</span>
+    </button>
+
+    <button id="entryGemBuy" class="entryWallet gemWallet" type="button" aria-label="Buy diamonds">
+      <span class="walletIcon">💎</span>
+      <span class="walletValue" id="entryGemBalance">50</span>
+      <span class="walletPlus">+</span>
+    </button>
+
+    <button id="entrySettings" class="entrySettings" type="button" aria-label="Settings">⚙️</button>
+  </div>
+
+  <div class="entryLogo">
+    <div class="crown">👑</div>
+    <div class="logoTitle">AK LUDO</div>
+    <div class="logoRibbon">PLAY • ENJOY • WIN</div>
+  </div>
+
+  <div class="entryModes">
+    <button id="entryFriends" class="entryMode friendsMode" type="button">
+      <span class="entryIcon">👥</span>
+      PLAY WITH FRIENDS
+      <small>Same-device multiplayer</small>
+    </button>
+
+    <button id="entryComputer" class="entryMode aiMode" type="button">
+      <span class="entryIcon">🤖</span>
+      PLAY WITH AI
+      <small>Smart computer opponents</small>
+    </button>
+
+    <button id="entryMixed" class="entryMode mixedMode" type="button">
+      <span class="entryIcon">👥🤖</span>
+      FRIENDS & AI
+      <small>2 humans + 2 computer players</small>
+    </button>
+
+    <button id="entryOnline" class="entryMode onlineMode" type="button">
+      <span class="entryIcon">🌐</span>
+      ONLINE PLAY
+      <small>4 players on different phones</small>
+    </button>
+  </div>
+  <div class="entryHint">VS AI • Same-device Friends • Online Multiplayer</div>
+</section>
+
+<!-- PLAYER SETUP -->
+<section id="setupScreen" class="screen setupScreen hidden">
+  <div class="setupTop">
+    <button id="setupBack" class="backBtn" type="button">← Back</button>
+    <h3>Player Setup</h3>
+    <div id="setupModeBadge" class="setupModeBadge">VS COMPUTER</div>
+  </div>
+
+  <div class="setupCard">
+    <div class="setupTitle">HOW MANY PLAYERS?</div>
+    <div class="setupCountRow">
+      <button class="setupCount" data-setup-count="2" type="button">2</button>
+      <button class="setupCount" data-setup-count="3" type="button">3</button>
+      <button class="setupCount selected" data-setup-count="4" type="button">4</button>
+    </div>
+  </div>
+
+  <div class="setupCard">
+    <div class="setupTitle">PLAYER NAMES</div>
+    <div class="setupNames">
+      <label class="setupNameField" data-setup-name-field="0" style="--nameColor:var(--red)">
+        <span class="setupNameDot"></span>
+        <input data-player-name="0" type="text" maxlength="14" value="You" aria-label="Red player name">
+      </label>
+      <label class="setupNameField" data-setup-name-field="1" style="--nameColor:var(--green)">
+        <span class="setupNameDot"></span>
+        <input data-player-name="1" type="text" maxlength="14" value="Computer 2" aria-label="Green player name">
+      </label>
+      <label class="setupNameField" data-setup-name-field="2" style="--nameColor:var(--yellow)">
+        <span class="setupNameDot"></span>
+        <input data-player-name="2" type="text" maxlength="14" value="Computer 3" aria-label="Yellow player name">
+      </label>
+      <label class="setupNameField" data-setup-name-field="3" style="--nameColor:var(--blue)">
+        <span class="setupNameDot"></span>
+        <input data-player-name="3" type="text" maxlength="14" value="Computer 4" aria-label="Blue player name">
+      </label>
+    </div>
+  </div>
+
+  <button id="setupStart" class="setupPlay" type="button">▶ START GAME</button>
+</section>
+
+<!-- GAME -->
+<section id="gameScreen" class="screen gameScreen hidden">
+  <div class="gameTopMini">
+    <div class="smallLogo">👑 LUDO ARENA</div>
+    <div id="turnPill" class="turnPill">Starting…</div>
+  </div>
+
+  <div class="topControls">
+    <button id="homeGame" type="button"><span class="ico">🏠</span>HOME</button>
+    <button id="restartGame" type="button"><span class="ico">🔄</span>RESTART</button>
+    <button id="soundGame" type="button"><span class="ico">🔊</span>SOUND</button>
+    <button id="pauseGame" type="button"><span class="ico">⏸</span>PAUSE</button>
+    <button id="openSettingsGame" type="button"><span class="ico">⚙️</span>SETTINGS</button>
+  </div>
+
+  <div class="playerRows">
+    <div class="playerPanel" data-card="1" data-p="1" style="--panelColor:var(--green)">
+      <div class="playerAvatar">🤖</div>
+      <div class="pInfo"><b data-name="1">Computer 2</b><small data-home="1">Home 0/4</small><div class="smallPawn"><i class="spH"></i><i class="spB"></i></div></div>
+      <button class="playerDice" data-dice="1" data-p="1" type="button" aria-label="Green dice"></button>
+    </div>
+    <div class="playerPanel" data-card="2" data-p="2" style="--panelColor:var(--yellow)">
+      <div class="playerAvatar">🤖</div>
+      <div class="pInfo"><b data-name="2">Computer 3</b><small data-home="2">Home 0/4</small><div class="smallPawn"><i class="spH"></i><i class="spB"></i></div></div>
+      <button class="playerDice" data-dice="2" data-p="2" type="button" aria-label="Yellow dice"></button>
+    </div>
+  </div>
+
+  <div class="boardFrame">
+    <div class="board">
+      <div id="boardGrid" class="grid"></div>
+      <div class="basePad pad1"><i class="baseHole bh1"></i><i class="baseHole bh2"></i><i class="baseHole bh3"></i><i class="baseHole bh4"></i></div>
+      <div class="basePad pad2"><i class="baseHole bh1"></i><i class="baseHole bh2"></i><i class="baseHole bh3"></i><i class="baseHole bh4"></i></div>
+      <div class="basePad pad0"><i class="baseHole bh1"></i><i class="baseHole bh2"></i><i class="baseHole bh3"></i><i class="baseHole bh4"></i></div>
+      <div class="basePad pad3"><i class="baseHole bh1"></i><i class="baseHole bh2"></i><i class="baseHole bh3"></i><i class="baseHole bh4"></i></div>
+      <div class="center"><i class="tri tri0"></i><i class="tri tri1"></i><i class="tri tri2"></i><i class="tri tri3"></i></div>
+      <div id="tokens" class="tokens"></div>
+    </div>
+  </div>
+
+  <div class="playerRows">
+    <div class="playerPanel" data-card="0" data-p="0" style="--panelColor:var(--red)">
+      <div class="playerAvatar">🙂</div>
+      <div class="pInfo"><b data-name="0">You</b><small data-home="0">Home 0/4</small><div class="smallPawn"><i class="spH"></i><i class="spB"></i></div></div>
+      <button class="playerDice" data-dice="0" data-p="0" type="button" aria-label="Red dice"></button>
+    </div>
+    <div class="playerPanel" data-card="3" data-p="3" style="--panelColor:var(--blue)">
+      <div class="playerAvatar">🤖</div>
+      <div class="pInfo"><b data-name="3">Computer 4</b><small data-home="3">Home 0/4</small><div class="smallPawn"><i class="spH"></i><i class="spB"></i></div></div>
+      <button class="playerDice" data-dice="3" data-p="3" type="button" aria-label="Blue dice"></button>
+    </div>
+  </div>
+
+  <div class="statusCard">
+    <div id="statusMain" class="statusMain">Your Turn</div>
+    <div id="statusSub" class="statusSub">Tap your red dice to roll</div>
+    <div class="timeTrack"><div id="timeFill" class="timeFill"></div></div>
+  </div>
+
+</section>
+
+
+<!-- SHOP -->
+<section id="shopScreen" class="screen shopScreen hidden">
+  <div class="shopHead">
+    <button id="shopBack" class="backBtn" type="button">← Back</button>
+    <h3>🛒 Shop</h3>
+    <div class="shopWallet">🏆 <span id="shopWins">0</span> &nbsp; 🪙 <span id="shopCoins">0</span></div>
+  </div>
+  <div class="shopIntro"><strong>Win matches → earn coins → unlock cosmetics.</strong> Winning a match gives <b>600 coins</b>. Every board and pawn design is permanent after purchase, and you can switch equipped items anytime.</div>
+
+  <div class="shopSectionTitle"><span>🎲 Ludo Boards</span><small>Tap BUY / EQUIP</small></div>
+  <div id="boardShop" class="shopGrid"></div>
+
+  <div class="shopSectionTitle"><span>♟ Pawn Designs</span><small>Applies to all four colours</small></div>
+  <div id="pawnShop" class="shopGrid"></div>
+</section>
+
+
+
+<!-- ONLINE PLAY -->
+<div id="onlineModal" class="modalOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="onlineTitle">
+  <div class="onlineModalCard">
+    <h3 id="onlineTitle">🌐 Online Play</h3>
+    <p class="onlineLead">Play with 4 people on different phones using a multiplayer server.</p>
+    <input id="onlineServerUrl" class="onlineUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://your-ludo-server.com" aria-label="Online multiplayer server URL">
+    <div class="modalButtonRow">
+      <button id="onlineCancel" class="modalSecondary" type="button">CANCEL</button>
+      <button id="onlineConnect" class="modalPrimary" type="button">CONNECT</button>
+    </div>
+    <div id="onlineStatus" class="onlineStatus"></div>
+    <div class="onlineHelp"><b>Offline modes still work without internet.</b><br>Online Play needs your deployed Node.js + Socket.IO AK LUDO server URL. After connecting, players can create or join the same 4-player room.</div>
+  </div>
+</div>
+
+<!-- PROFILE EDITOR -->
+<div id="profileModal" class="modalOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="profileEditTitle">
+  <div class="profileModalCard">
+    <div class="profileBigAvatar">🙂</div>
+    <h3 id="profileEditTitle">Edit Player</h3>
+    <input id="profileNameInput" class="profileInput" type="text" maxlength="14" placeholder="Enter player name" aria-label="Player name">
+    <div class="modalButtonRow">
+      <button id="profileCancel" class="modalSecondary" type="button">CANCEL</button>
+      <button id="profileSave" class="modalPrimary" type="button">SAVE NAME</button>
+    </div>
+  </div>
+</div>
+
+<!-- CURRENCY STORE -->
+<div id="currencyModal" class="modalOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="currencyTitle">
+  <div class="currencyModalCard">
+    <h3 id="currencyTitle">💰 Currency Store</h3>
+    <div class="currencyBalances">
+      <div class="currencyBalance">🪙 Coins<strong id="currencyCoins">0</strong></div>
+      <div class="currencyBalance">💎 Diamonds<strong id="currencyGems">0</strong></div>
+    </div>
+
+    <div class="currencySectionTitle">BUY COINS WITH DIAMONDS</div>
+    <div class="packGrid">
+      <div class="pack"><div class="packIcon">🪙</div><div class="packAmount">1,000</div><div class="packPrice">💎 20</div><button data-coin-pack="1000" data-gem-cost="20" type="button">BUY</button></div>
+      <div class="pack"><div class="packIcon">🪙</div><div class="packAmount">5,000</div><div class="packPrice">💎 80</div><button data-coin-pack="5000" data-gem-cost="80" type="button">BUY</button></div>
+      <div class="pack"><div class="packIcon">🪙</div><div class="packAmount">15,000</div><div class="packPrice">💎 200</div><button data-coin-pack="15000" data-gem-cost="200" type="button">BUY</button></div>
+    </div>
+
+    <div class="currencySectionTitle">DIAMOND PACKS</div>
+    <div class="packGrid">
+      <div class="pack"><div class="packIcon">💎</div><div class="packAmount">50</div><div class="packPrice">₹49</div><button data-gem-pack="50" type="button">DEMO BUY</button></div>
+      <div class="pack"><div class="packIcon">💎</div><div class="packAmount">120</div><div class="packPrice">₹99</div><button data-gem-pack="120" type="button">DEMO BUY</button></div>
+      <div class="pack"><div class="packIcon">💎</div><div class="packAmount">300</div><div class="packPrice">₹199</div><button data-gem-pack="300" type="button">DEMO BUY</button></div>
+    </div>
+
+    <div id="purchaseToast" class="purchaseToast"></div>
+    <div class="currencyNote">Demo currency store for this HTML build. Real Android payments should be connected through Google Play Billing.</div>
+    <button id="currencyClose" class="modalClose" style="margin-top:10px" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- COMING SOON -->
+<div id="comingModal" class="modalOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="comingTitle">
+  <div class="modalCard">
+    <div id="comingIcon" class="modalIcon">🏆</div>
+    <h3 id="comingTitle">League</h3>
+    <p id="comingText">Competitive leagues are coming soon. Keep winning matches and building your collection!</p>
+    <button id="modalClose" class="modalClose" type="button">OK, GOT IT</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<section id="settingsScreen" class="screen settingsScreen hidden">
+  <div class="settingsHead"><h3>⚙️ Settings</h3><button id="settingsBack" class="backBtn" type="button">← Back</button></div>
+  <button id="settingsShop" class="setupPlay" style="height:52px;margin:0 0 10px;font-size:16px" type="button">🛒 OPEN SHOP</button>
+  <label class="settingRow"><span><b>Sound Effects</b><small>Dice, pawn opening, movement, capture, home and victory</small></span><span class="switch"><input id="setSound" type="checkbox" checked><i class="slider"></i></span></label>
+  <label class="settingRow"><span><b>Animations</b><small>Dice rolling, hopping pawns and capture reactions</small></span><span class="switch"><input id="setAnimations" type="checkbox" checked><i class="slider"></i></span></label>
+  <label class="settingRow"><span><b>Turn Timer</b><small>Time limit for human turns</small></span><select id="setTimer"><option value="0">Off</option><option value="15" selected>15 sec</option><option value="30">30 sec</option><option value="45">45 sec</option></select></label>
+  <label class="settingRow"><span><b>AI Difficulty</b><small>How strategically computer players choose pawns</small></span><select id="setDifficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option></select></label>
+  <label class="settingRow"><span><b>Blockades</b><small>Two same-colour pawns block opponents</small></span><span class="switch"><input id="setBlocks" type="checkbox" checked><i class="slider"></i></span></label>
+  <label class="settingRow"><span><b>Three Sixes Rule</b><small>Third consecutive six cancels the turn</small></span><span class="switch"><input id="setThreeSix" type="checkbox" checked><i class="slider"></i></span></label>
+</section>
+
+<!-- WINNER -->
+<section id="winnerScreen" class="screen winnerScreen hidden">
+  <div class="victoryStage">
+    <canvas id="fireworks"></canvas>
+    <div class="victoryContent">
+      <div class="victoryCrown">👑</div>
+      <div class="winLabel">MATCH WINNER</div>
+      <div id="winnerName" class="winnerName">YOU WIN!</div>
+      <div class="winSub">All four pawns reached home</div>
+    </div>
+  </div>
+  <div id="rewardBanner" class="rewardBanner"></div>
+  <div id="finalRanking" class="finalRanking"></div>
+  <div class="winnerButtons">
+    <button id="rematchBtn" class="rematch" type="button">🔄 PLAY AGAIN</button>
+    <button id="winnerHome" class="homeWin" type="button">🏠 HOME</button>
+  </div>
+</section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
