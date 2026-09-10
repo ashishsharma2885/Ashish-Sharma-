@@ -31,7 +31,7 @@ jobs:
 
       - name: Restore and validate bundled game
         run: |
-          cat ludo-online-apk/app/src/main/assets/game.part{1,2,3,4,5,6} > /tmp/ludo-game.b64
+          cat ludo-online-apk/app/src/main/assets/game.part1a ludo-online-apk/app/src/main/assets/game.part1b1a ludo-online-apk/app/src/main/assets/game.part1b1b ludo-online-apk/app/src/main/assets/game.part1b2 ludo-online-apk/app/src/main/assets/game.part2 ludo-online-apk/app/src/main/assets/game.part3 ludo-online-apk/app/src/main/assets/game.part4 ludo-online-apk/app/src/main/assets/game.part5 ludo-online-apk/app/src/main/assets/game.part6 > /tmp/ludo-game.b64
           test "$(wc -c < /tmp/ludo-game.b64)" -eq 31948
           base64 -d /tmp/ludo-game.b64 | gzip -d > ludo-online-apk/app/src/main/assets/launcher.html
           test "$(wc -c < ludo-online-apk/app/src/main/assets/launcher.html)" -eq 93236
