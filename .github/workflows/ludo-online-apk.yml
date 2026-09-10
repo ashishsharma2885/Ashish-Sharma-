@@ -29,10 +29,13 @@ jobs:
       - name: Install Android platform
         run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
 
-      - name: Restore bundled game
+      - name: Restore and validate bundled game
         run: |
-          base64 -d ludo-online-apk/app/src/main/assets/launcher.html.gz.b64 | gzip -d > ludo-online-apk/app/src/main/assets/launcher.html
-          test -s ludo-online-apk/app/src/main/assets/launcher.html
+          cat ludo-online-apk/app/src/main/assets/game.part{1,2,3,4,5,6} > /tmp/ludo-game.b64
+          test "$(wc -c < /tmp/ludo-game.b64)" -eq 31948
+          base64 -d /tmp/ludo-game.b64 | gzip -d > ludo-online-apk/app/src/main/assets/launcher.html
+          test "$(wc -c < ludo-online-apk/app/src/main/assets/launcher.html)" -eq 93236
+          echo '26ed928cc5c850fadc1fe268f92dda2efa850ab68fb390503dae8d21028907cf  ludo-online-apk/app/src/main/assets/launcher.html' | sha256sum -c -
           grep -q 'VS COMPUTER' ludo-online-apk/app/src/main/assets/launcher.html
           grep -q 'PLAY WITH FRIENDS' ludo-online-apk/app/src/main/assets/launcher.html
           grep -q 'ONLINE PLAY' ludo-online-apk/app/src/main/assets/launcher.html
@@ -56,15 +59,18 @@ jobs:
         run: $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose --print-certs ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Inspect package
-        run: $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | head -20
+        run: |
+          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | head -20
+          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | grep "package: name='com.ludoarena.akstable2026'"
+          $ANDROID_HOME/build-tools/35.0.0/aapt dump badging ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk | grep "sdkVersion:'21'"
 
       - name: Rename APK
-        run: cp ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk Ludo_Arena_Stable_Android.apk
+        run: cp ludo-online-apk/app/build/outputs/apk/debug/app-debug.apk Ludo_Arena_Stable_Fixed.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Ludo_Arena_Stable_Android
-          path: Ludo_Arena_Stable_Android.apk
+          name: Ludo_Arena_Stable_Fixed
+          path: Ludo_Arena_Stable_Fixed.apk
           if-no-files-found: error
           retention-days: 7
